@@ -1,0 +1,737 @@
+---
+title: "An introduction to MRP with an application to the SES"
+author: "Chris Hanretty"
+filters:
+   - include-code-files
+bibliography: biblio.bib
+nocite: |
+  @lax2009should, @park2004bayesian
+format: 
+  revealjs:
+    slide-number: true
+    code-overflow: wrap
+    preview-links: auto
+    theme: [default, custom.scss]
+    css: [logo.css]
+    transition: fade
+    background-transition: fade
+    title-slide-attributes:
+      data-background-image: vertical_strip.png
+      data-background-position: top
+      data-background-size: contain
+      data-background-repeat: repeat-x
+---
+
+
+# Premises
+
+## About you
+
+ - You're a social scientist who works with election studies (🇬🇧; 🏴󠁧󠁢󠁳󠁣󠁴󠁿; 🏴󠁧󠁢󠁷󠁬󠁳󠁿; 🏴󠁧󠁢󠁮󠁩󠁲󠁿)
+ - You have used multilevel or random intercept models for limited (binary or categorical) dependent variables 
+ - You use R (😊󠁧󠁢) or Stata (😐)
+ - You are aware of census data;
+ - You are aware of Bayesian methods
+
+## Objectives for today
+
+ - To understand what multilevel regression and post-stratification (MRP) is;
+ - To know when MRP works well and when it works poorly;
+ - To understand how a post-stratification frame is constructed
+ - To be able to estimate a model and post-stratify predictions
+ - To know how to incorporate uncertainty into these predictions
+ 
+## Materials
+
+ - The materials for this workshop are available at [https://github.com/chrishanretty/ses_mrp_workshop](github.com/chrishanretty/ses_mrp_workshop)
+ - This includes:
+    * these slides
+	* a post-stratification frame for Scottish Parliamentary Constituencies
+	* A cut-down version of the post-2021 election Scottish Election Study data
+ - This does not include:
+    * post-stratification frames for any other jurisdiction
+	
+## {.center}
+
+::: {.callout-note}
+## Overall approach
+
+MRP is not complicated. It is a **footer**, but **dinna fash**.
+
+:::
+
+# About MRP
+
+## Origins
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+![Ithiel de Sola Pool (b. 1917, d. 1984)](index_files/desolapool.jpg)
+
+:::
+
+::: {.column width="60%"}
+
+ - Early attempts by the Simulmatic Corporation to forecast US
+   presidential elections (1960)
+ - Fictionalized in the thriller novel *The 480* (1964)
+ - Key idea: large national surveys allow inferences to be drawn about
+   the behaviours of different voter blocks
+ 
+:::
+
+::::
+
+## Modern treatments
+
+ - The best modern treatment is (depending on taste)
+      * Park, David K, Andrew Gelman, and Joseph Bafumi. 2004. "Bayesian Multilevel Estimation with Poststratification: State-Level Estimates from National Polls", *Political Analysis* 12 (4): 375–85.
+	  * Lax, Jeffrey R, and Justin H Phillips. 2009. “How Should We Estimate Public Opinion in the States?” *American Journal of Political Science* 53 (1): 107–21.
+	  
+## What changed? 
+
+ - Between the 1960 and the 2000s we've seen
+      * vast increases in computing power
+	  * development of Bayesian modelling and multilevel modelling
+ - MRP is now a mature technology, and new papers tend to focus on
+   marginal improvements which deal with better modelling or better
+   ways to deal with post-stratification
+ - MRP remains computationally intensive (model runs of up to several hours)
+ 
+## The multilevel element
+
+ - In studies of electoral behaviour: survey respondents are individuals (level 1) nested in electoral districts (level 2)
+ - These electoral districts have effects on the people in them (context matters)
+ - In MRP models, these effects are modelled as **random intercepts**
+ 
+## Why random intercepts?
+
+ - Our predictions are more accurate because we've reduced variance (at the cost of bias)
+ - We don't really care about the units *per se*
+ - This approach also extends to demographic groups (education, age, ethnicity, sex), with a few more philosophical qualms
+ - Random intercepts, but you'll also hear about *partial pooling* or *regularization*
+
+## The regression element
+
+ - Any regression model can be turned into a MRP model
+ - There are some techniques for small area estimation which don't use
+   regression but instead use tree-based models [@bisbee2019barp], but
+   these (i) all use some form of regularization; and (ii) have had
+   mixed success [@goplerud2023re]
+ - Most MRP models are binary or categorical models
+ - Continuous models (e.g., for feeling thermometers) are rare;
+   ordinal or bivariate models are rarer still
+ 
+## The post-stratification element
+
+ - What distinguishes MRP is the idea that we use our models to
+   generate predictions (for discrete types) which we then aggregate
+ - Example: 5,040 voter "types" defined by
+    * seven age groups, times
+	* two sexes, times
+	* five educational qualifications, times
+	* 72 constituencies
+ - This requires us to know the **joint distribution** of type-defining attributes
+ 
+## How it's usually applied (1)
+
+ - **Number of area level units:** between 4 (Canadian metropolitan areas) and 9,981 (US Census administrative units) with a median value of 50
+ - **Sample size:** Median sample size of ~7,500, IQR of ~2,500 to ~55,000
+ - **Sample size/areas**: median ratio of 87 respondents/unit
+
+
+**Source:** @lobo2021how
+
+
+## How it's usually applied (2): individual predictors
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+Almost always included:
+
+ - **Gender:** 92%
+ - **Education:** 89%
+ - **Age:** 86%
+ - **Ethnicity:** 70%
+
+:::
+
+::: {.column width="50%"}
+
+Sometimes included:
+
+ - **Past vote:** 17%
+ - **Social grade:** 5%
+
+:::
+
+::::
+
+
+## How it's usually applied (3): Area-level predictors
+
+
+ - **Median number of area-level predictors** is three (IQR: 2 to 5)
+ - ... but this depends heavily on the number of areas included
+ - There is a tension between adding relevant data and over-fitting 
+ - ... but we should probably be using more area level predictors
+
+## "What works"
+
+ - Post-stratification variables include variables that affect survey
+   participation (for non-probability samples)
+ - Modelling includes a large number (up to one for every ten areas)
+   of relevant area level variables [@hanretty2018comparing]
+ - Modelled behaviour/opinion strongly connected with individual level
+   characteristics (no opinions on individual MPs or context-specific
+   questions)
+
+## To what end?
+
+ - **In its own right**. It can be valuable to know public opinion.
+ - **As a predictor variable**. We may want to know the association
+   between public opinion and legislator behaviour.
+ - **As an outcome variable?** I struggle to think of cases where we
+   would model aggregate opinion when we had individual opinion.
+
+## {.center}
+
+::: {.callout-note}
+
+Let's pause here for questions before going on to post-stratification frames.
+:::
+
+# Post-stratification frames
+
+## Post-stratification frames
+
+ - We need to know how many voters of each different type live in each
+   different area
+ - This involves relying on some other more certain source of data
+ - We can either rely on the Census or some other massive non-probability sample
+ - In the UK, this can mean either the different national censuses, or the Annual Population Survey or Labour Force Survey (n = 320,000 per year)
+
+## Common problems
+
+ - Dissemination sites like [nomisweb](https://www.nomisweb.co.uk/) typically give two-way or three-way Census tables, but not four- or five-way Census tables
+ - We want to include individual level variables (past vote) which are not included in Census data
+ - Census variables are released for subgroups (those aged 16-64) rather than the population we are interested in
+ - Census variables are not released for subgroups we are interested in (those who have the vote)
+
+## Raking to the rescue
+
+ - Raking, or iterative proportional fitting, is a way to make joint distributions match marginal distributions
+ - It involves repeatedly multiplying and dividing rows and columns in order to match their marginal distributions
+ - We have to start with some initial joint distribution, which could be from our survey data
+ 
+## Example of raking adapted from Wikipedia {.smaller}
+
+
+|        | NVQ L1 | NVQ L2 | NVQ L3 | NVQ L4+ | TOTAL | TARGET |
+|:------:|:------:|:------:|:------:|:-------:|:-----:|:------:|
+| AB     | 40     | 30     | 20     | 10      | 100   | 150    |
+| C1     | 35     | 50     | 100    | 75      | 260   | 300    |
+| C2     | 30     | 80     | 70     | 120     | 300   | 400    |
+| DE     | 20     | 30     | 40     | 50      | 140   | 150    |
+| TOTAL  | 125    | 190    | 230    | 255     | 800   |        |
+| TARGET | 200    | 300    | 400    | 100     |       | 1000   |
+
+
+## Example of raking (2) {.smaller}
+
+
+|        | NVQ L1 | NVQ L2 | NVQ L3 | NVQ L4+ | TOTAL | TARGET | **Multiplier** |
+|:------:|:------:|:------:|:------:|:-------:|:-----:|:------:|:--------------:|
+| AB     | 40     | 30     | 20     | 10      | 100   | 150    | **1.5**        |
+| C1     | 35     | 50     | 100    | 75      | 260   | 300    | **1.15**       |
+| C2     | 30     | 80     | 70     | 120     | 300   | 400    | **1.33**       |
+| DE     | 20     | 30     | 40     | 50      | 140   | 150    | **1.07**       |
+| TOTAL  | 125    | 190    | 230    | 255     | 800   |        |                |
+| TARGET | 200    | 300    | 400    | 100     |       | 1000   |                |
+
+## Example of raking (3) {.smaller}
+
+|        | NVQ L1 | NVQ L2 | NVQ L3 | NVQ L4+ |  **Total**  | Target |
+|:------:|:------:|:------:|:------:|:-------:|:-----------:|--------|
+| AB     | 60.00  | 45.00  | 30.00  | 15.00   | **150.00**  | 150    |
+| C1     | 40.38  | 57.69  | 115.38 | 86.54   | **300.00**  | 300    |
+| C2     | 40.00  | 106.67 | 93.33  | 160.00  | **400.00**  | 400    |
+| DE     | 21.43  | 32.14  | 42.86  | 53.57   | **150.00**  | 150    |
+| TOTAL  | 161.81 | 241.50 | 281.58 | 315.11  | **1000.00** |        |
+| TARGET | 200    | 300    | 400    | 100     |             |        |
+
+## Example of raking (4) {.smaller}
+
+|            | NVQ L1     |     NVQ L2 | NVQ L3     |     NVQ L4+ |  Total  | Target |
+|:----------:|:----------:|:----------:|:----------:|:-----------:|:-------:|--------|
+| AB         | 60.00      | 45.00      | 30.00      | 15.00       | 150.00  | 150    |
+| C1         | 40.38      | 57.69      | 115.38     | 86.54       | 300.00  | 300    |
+| C2         | 40.00      | 106.67     | 93.33      | 160.00      | 400.00  | 400    |
+| DE         | 21.43      | 32.14      | 42.86      | 53.57       | 150.00  | 150    |
+| TOTAL      | 161.81     | 241.50     | 281.58     | 315.11      | 1000.00 |        |
+| TARGET     | 200        | 300        | 400        | 100         |         |        |
+| Multiplier | **1.23**   | **1.24**   | **1.42**   | **.317**    |         |        |
+
+
+## In this case... 
+
+ - The **joint distribution** comes from the December 2020 Labour Force Survey / Annual Population Survey micro-data (n = 26,279 in Scotland)
+ - (This is available through the UK Data Archive under a non-commercial use licence)
+ - We use December 2020 because only December releases contain educational data, and because it is the closest wave prior to the 2021 elections
+ 
+## Variables included
+
+ - We use information on the following variables:
+     * Age
+	 * Sex
+	 * Highest qualifications
+	 * Ethnicity
+
+## Categorization
+
+ - **Age:** eight categories (16-19, 20-24, 25-29, 30-39, 40-49, 50-64, 65-74, 75+)
+ - **Sex:** two categories (male, female)
+ - **Qualifications**: seven categories (No qualifications, NVQ1, NVQ2, NVQ3, NVQ4+, other quals., trade apprenticeships)
+ - **Ethnicity**: two categories (white, ethnic minority)
+ 
+## Examples of qualifications
+
+```{r, echo = TRUE, eval = FALSE}
+aps <- aps |>
+    mutate(quals = dplyr::recode(HIQUAL15,
+                                 "A-level or equivalent" = "NVQ3 only",
+                                 "Access qualifications" = "NVQ3 only",
+                                 "Advanced Welsh Baccalaureate" = "NVQ3 only",
+                                 "Advanced/Progression (14-19) Diploma" = "NVQ3 only",
+                                 "AS-level or equivalent" = "NVQ3 only",
+                                 "Basic skills qualification" = "NVQ1 only",
+                                 "BTEC/SCOTVEC First or General certificate" = "NVQ2 only",
+                                 "BTEC/SCOTVEC First or General diploma etc" = "NVQ2 only",
+                                 "City & Guilds Advanced Craft/Part 1" = "NVQ3 only",
+                                 "City & Guilds Craft/Part 2" = "NVQ3 only",
+                                 "City & Guilds foundation/Part 1" = "NVQ2 only",
+                                 "CSE below grade 1, GCSE below grade C" = "NVQ1 only",
+                                 "Diploma in higher education" = "NVQ4+",
+                                 "Does not apply" = "other qualifications (NVQ)",
+                                 "Don?t know" = "no qualifications (NVQ)",
+                                 "Entry level  Award" = "NVQ1 only",
+                                 "Entry level  Certificate" = "NVQ1 only",
+                                 "Entry level  Diploma" = "NVQ1 only",
+                                 "Entry level qualification" = "NVQ1 only",
+                                 "First degree/foundation degree" = "NVQ4+",
+                                 "Foundation (14-19) Diploma" = "NVQ3 only",
+                                 "GNVQ/GSVQ advanced" = "NVQ3 only",
+                                 "GNVQ/GSVQ foundation level" = "NVQ1 only",
+                                 "GNVQ/GSVQ intermediate" = "NVQ2 only",
+                                 "Higher (14-19) Diploma" = "NVQ3 only",
+                                 "Higher degree" = "NVQ4+",
+                                 "HNC/HND/BTEC higher etc" = "NVQ4+",
+                                 "Intermediate Welsh Baccalaureate" = "NVQ2 only",
+                                 "International Baccalaureate" = "NVQ3 only",
+                                 "Key skills qualification" = "NVQ1 only",
+                                 "Level 1  Award" = "NVQ1 only",
+                                 "Level 1  Certificate" = "NVQ1 only",
+                                 "Level 1  Diploma" = "NVQ1 only",
+                                 "Level 2  Award" = "NVQ2 only",
+                                 "Level 2  Certificate" = "NVQ2 only",
+                                 "Level 2  Diploma" = "NVQ2 only",
+                                 "Level 3 Award" = "NVQ3 only",
+                                 "Level 3 Certificate" = "NVQ3 only",
+                                 "Level 3 Diploma" = "NVQ3 only",
+                                 "Level 4 Award" = "NVQ4+",
+                                 "Level 4 Certificate" = "NVQ4+",
+                                 "Level 4 Diploma" = "NVQ4+",
+                                 "Level 5 Award" = "NVQ4+",
+                                 "Level 5 Certificate" = "NVQ4+",
+                                 "Level 5 Diploma" = "NVQ4+",
+                                 "Level 6 Award" = "NVQ4+",
+                                 "Level 6 Certificate" = "NVQ4+",
+                                 "Level 6 Diploma" = "NVQ4+",
+                                 "Level 7 Award" = "NVQ4+",
+                                 "Level 7 Certificate" = "NVQ4+",
+                                 "Level 7 Diploma" = "NVQ4+",
+                                 "Level 8 Award" = "NVQ4+",
+                                 "Level 8 Certificate" = "NVQ4+",
+                                 "Level 8 Diploma" = "NVQ4+",
+                                 "No answer" = "no qualifications (NVQ)",
+                                 "No qualifications" = "no qualifications (NVQ)",
+                                 "Nursing etc" = "NVQ4+",
+                                 "NVQ level 1 or equivalent" = "NVQ1 only",
+                                 "NVQ level 2 or equivalent" = "NVQ2 only",
+                                 "NVQ level 3" = "NVQ3 only",
+                                 "NVQ level 4" = "NVQ4+",
+                                 "NVQ level 5" = "NVQ4+",
+                                 "O-level, GCSE grade A*-C or equivalent" = "NVQ2 only",
+                                 "OND/ONC/BTEC/SCOTVEC National etc" = "NVQ3 only",
+                                 "Other degree" = "NVQ4+",
+                                 "Other higher education below degree" = "NVQ4+",
+                                 "Other qualification" = "other qualifications (NVQ)",
+                                 "RSA advanced diploma" = "NVQ4+",
+                                 "RSA diploma" = "NVQ3 only",
+                                 "RSA higher diploma" = "NVQ4+",
+                                 "RSA other" = "NVQ1 only",
+                                 "SCE higher or equivalent" = "NVQ3 only",
+                                 "Scottish 6 year certificate/CSYS" = "NVQ3 only",
+                                 "Scottish Baccalaureate" = "NVQ3 only",
+                                 "Scottish National below level 3" = "NVQ1 only",
+                                 "Scottish National Level 3" = "NVQ1 only",
+                                 "Scottish National Level 4" = "NVQ1 only",
+                                 "Scottish National Level 5" = "NVQ2 only",
+                                 "SCOTVEC modules" = "NVQ1 only",
+                                 "Teaching foundation stage" = "NVQ4+",
+                                 "Teaching further education" = "NVQ4+",
+                                 "Teaching level not stated" = "NVQ4+",
+                                 "Teaching primary education" = "NVQ4+",
+                                 "Teaching secondary education" = "NVQ4+",
+                                 "Trade apprenticeship" = "Trade Apprenticeships",
+                                 "YT/YTP certificate" = "NVQ2 only"))
+
+```
+
+## Marginal distributions
+
+ - For **age** and **sex**, we use marginal distributions from National Records of Scotland
+ - They provide [population estimates broken down by sex and single year of age](https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/population/population-estimates/2011-based-special-area-population-estimates/spc-population-estimates) for each Scottish Parliament Constituency (SPC)
+ - For **education** and **ethnicity**, we use information from the APS/LFS (March 2021 editions)
+ - There is one wrinkle for **education**: the LFS is only interested in those 16-64.
+ - We take 2005-vintage data for those 50-65 and bring it forward to cover those 65+
+
+## Raking in R
+
+ - In order to rake in R, I use the `anesrake` package
+ - As the name suggests, this is made for ANES data, but works fine with other data
+ - Other packages (`ipfr`, `mipfp`) are available
+ 
+## Raking in R (2)
+
+ - Suppose we have variables in `anes` called `agecats` and `married`
+ - We want to match the following targets:
+ 
+```{r, echo = TRUE}
+married_tgt <- c(.4, ## logical false = not married 
+                 .6) ## logical true = married
+
+age_tgt <- c("age1824" = .1,
+             "age2534" = .15,
+             "age3544" = .17,
+             "age4554" = .23,
+             "age5564" = .22,
+             "age6599" = .13)
+
+tgts <- list("married" = married_tgt,
+             "agecats" = age_tgt)
+```
+
+## Raking in R (3)
+
+ - We'd have to tidy our data to make sure it matches how our targets are specified
+ 
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+library(anesrake)
+library(tidyverse)
+data("anes04")
+anes04 <- anes04 |>
+    mutate(caseid  = seq_len(n()),
+           agecats = cut(age,
+                         c(0, 25,35,45,55,65,99),
+                         labels = c("age1824", "age2534", "age3544",
+                                    "age4554", "age5564", "age6599")))
+```
+
+## Raking in R (4)
+
+```{r, echo = TRUE}
+res <- anesrake(tgts,
+                anes04,
+                caseid = anes04$caseid,
+                verbose = TRUE)
+```
+
+
+## Raking in R (5)
+
+We'll need to get access to these weights...
+
+```{r, echo = TRUE}
+caseweights <- data.frame(caseid = res$caseid,
+                          w8 = res$weightvec)
+
+anes04 <- left_join(anes04,
+                    caseweights,
+                    by = "caseid")
+```
+
+
+## Raking a post-stratification frame
+
+ - Raking a post-stratification frame is no different in principle
+ - In practice, we're raking on more variables, and raking one constituency at a time
+ - IPF is pretty robust, so we don't have to worry about problems
+ - ... except where you have structural zeros
+
+## Adding on political variables
+
+ - I haven't said anything about political variables for post-stratification
+ - I run an MRP model of list vote choice using the SES post-election wave
+ - I then adjust these MRP predictions to match known results using a
+   "logit shift" [@rosenman2023recalibration]
+ - I add these predictions on to the post-stratification frame and adjust
+
+## The resulting post-stratification frame
+
+ - **Age:** eight categories (16-19, 20-24, 25-29, 30-39, 40-49, 50-64, 65-74, 75+)
+ - **Sex:** two categories (male, female)
+ - **Qualifications**: seven categories (No qualifications, NVQ1, NVQ2, NVQ3, NVQ4+, other quals., trade apprenticeships)
+ - **Ethnicity**: two categories (white, ethnic minority)
+ - **2021 list vote**: seven categories (Con., DNV, Green, Lab, LibDem, Other, SNP)
+
+## Some summary statistics...
+
+ - There are fewer rows (80,297) than unique combinations of the variables
+ - Not all combinations are possible; some have trace presence (16-19 years old with degrees)
+ - The weights are expressed as proportions of the 16+ population (i.e., VAP)
+ - The average (mean) weight is 1 in 1,100
+ - The maximum weight is just under 5% (white women in Edinburgh Central aged 30-39 w/ NVQ4+ who didn't vote)
+ 
+## {.center}
+
+::: {.callout-note}
+
+Let's pause here for questions before going on to the application.
+
+:::
+
+
+# The application
+
+## Directory structure
+
+```
+├── data
+│   ├── 2021_results_over_vap.csv
+│   ├── psf.csv
+│   └── ses21_postelection_subset.csv
+├── R
+│   ├── 001_tidy_data.R
+│   ├── 002_mrp_with_glmer.R
+│   └── 003_mrp_with_brms.R
+├── README.md
+├── slides
+│   ├── index_files
+│   ├── index.html
+│   └── index.qmd
+└── working
+    └── tidy_ind_data.rds
+
+```
+
+
+## `2021_results_over_vap.csv`
+
+A comma separated values file containing information on the list votes
+of selected parties (and those who did not vote) expressed as a
+proportion of the voting age population.
+
+This is the constituency-level analogue of the "past_list_vote"
+variable in the post-stratification frame.
+
+## `ses21_postelection_subset.csv` {.smaller}
+
+A comma separated values file with 3,442 observations on the following
+variables:
+
+ - **age**: an integer
+ - **birthSex**: a character variable with two unique values
+ - **profile_education_level**: a character variable with 20 unique values
+ - **ethnicity_new**: a character variable with 17 unique values
+ - **ethnicity_new1617**: as above, but for a small number of top-up respondents
+ - **w2_voted**: whether or not the respondent voted in the 2021 SP election
+ - **w2_vb15**: the party for which the respondent voted
+ - **w2_uk10**: the respondent's view on Scottish independence (1 =
+   'Yes'; 2 = 'No'; 3 = 'Would not vote'; 4 = 'Don't know')
+   
+
+## `psf.csv`
+
+A comma separated values file; a post-stratification frame, as discussed above.
+
+## R packages used
+
+I'll be using the following packages:
+
+ - `tidyverse`: the general utility package
+ - `here`: for consistently dealing with file locations
+ - `lme4`: for frequentist multilevel models
+ - `brms`: for Bayesian models of all kinds
+ 
+
+## Tidying the data
+
+```{.r include="../R/001_tidy_data.R" start-line=1 end-line=13}
+```
+
+## Making categories match: age
+
+```{.r include="../R/001_tidy_data.R" start-line=16 end-line=34}
+```
+
+## Making categories match: education
+
+```{.r include="../R/001_tidy_data.R" start-line=53 end-line=81}
+```
+
+## Notes on tidying
+
+ - We drop missing observations; we could use single-shot imputation with `Amelia`
+ - We drop from 3,442 observations to 2,841 observations (mostly due to missingness on the outcome)
+ - We make some assumptions about ethnicity and past vote behaviour at some points
+    * "Don't knows" are "white" and "did not vote" respectively
+ - Your thoughts on this welcome!
+ 
+## Modelling the model with `glmer` {.smaller}
+
+```{.r include="../R/002_mrp_with_glmer.R" start-line=1 end-line=30}
+```
+
+## Modelling the model with `glmer` (2)
+
+```{.r include="../R/002_mrp_with_glmer.R" start-line=34 end-line=37}
+```
+
+ChatGPT translation:
+
+```
+xtmelogit dv sex ethnicity SNP Lab || geogcode: || age: || quals: || past_list_vote:, ///
+    covariance(unstructured) family(binomial) link(logit)
+```
+	
+## Post-stratifying
+
+
+```{.r include="../R/002_mrp_with_glmer.R" start-line=40 end-line=47}
+```
+
+## Outputs
+
+
+```{r, eval = FALSE, echo = TRUE}
+consty |>
+    arrange(desc(mean_indy_support)) |>
+    head()
+```
+
+
+```
+  geogcode  ScotPcon2014            mean_indy_support
+  <chr>     <chr>                               <dbl>
+1 S16000099 Dundee City West                    0.532
+2 S16000093 Cumbernauld and Kilsyth             0.529
+3 S16000091 Coatbridge and Chryston             0.523
+4 S16000122 Glasgow Southside                   0.522
+5 S16000123 Greenock and Inverclyde             0.510
+6 S16000119 Glasgow Pollok                      0.510
+```
+
+```{r, eval = FALSE, echo = TRUE}
+consty |>
+    arrange(desc(mean_indy_support)) |>
+    head()
+```
+
+```
+  geogcode  ScotPcon2014                       mean_indy_support
+  <chr>     <chr>                                          <dbl>
+1 S16000111 Ettrick, Roxburgh and Berwickshire             0.313
+2 S16000135 Orkney Islands                                 0.337
+3 S16000097 Dumfriesshire                                  0.338
+4 S16000078 Aberdeenshire West                             0.347
+5 S16000114 Galloway and West Dumfries                     0.373
+6 S16000081 Angus North and Mearns                         0.385
+```
+
+## What's wrong with this?
+
+ - There's nothing wrong with this model; it does the job, and quickly
+ - However, we have no measures of uncertainty, and 
+ - ... adding another constituency-level predictor introduces problems of perfect separation [@zorn2005solution]
+ - Both of these problems can be dealt with using Bayesian models
+ 
+## Modelling with `brms`
+
+```{.r include="../R/003_mrp_with_brms.R" start-line=38 end-line=47}
+```
+
+## Post-stratifying {.smaller}
+
+```{.r include="../R/003_mrp_with_brms.R" start-line=50 end-line=63}
+```
+
+
+## Aggregating {.smaller}
+
+```{.r include="../R/003_mrp_with_brms.R" start-line=64 end-line=73}
+```
+
+## Results
+
+```{r, eval = FALSE, echo = TRUE}
+consty |>
+    arrange(desc(mean_indy_support)) |>
+    head()
+```
+
+```
+ScotPcon2014       indy_support_mean indy_support_lo indy_support_hi
+<chr>                          <dbl>           <dbl>           <dbl>
+Dundee City West               0.535           0.483           0.593
+Glasgow Southside              0.525           0.467           0.580
+Cumbernauld and K…             0.517           0.453           0.552
+Coatbridge and Ch…             0.515           0.478           0.558
+Glasgow Pollok                 0.512           0.467           0.585
+Glasgow Kelvin                 0.507           0.443           0.579
+```
+
+```{r, eval = FALSE, echo = TRUE}
+consty |>
+    arrange(mean_indy_support) |>
+    head()
+```
+
+```
+ScotPcon2014       indy_support_mean indy_support_lo indy_support_hi
+<chr>                          <dbl>           <dbl>           <dbl>
+Ettrick, Roxburgh…             0.320           0.271           0.358
+Dumfriesshire                  0.341           0.301           0.381
+Orkney Islands                 0.346           0.302           0.387
+Aberdeenshire West             0.352           0.312           0.386
+Galloway and West…             0.375           0.336           0.404
+Angus North and M…             0.385           0.327           0.420
+
+```
+
+## Things to note
+
+ - We can include interactions, but it's best to include them manually
+ - Memory requirements can become more demanding with more complicated post-stratification frames
+ - I haven't addressed categorical outcomes
+ - This code will work for any dichotomous or continuous outcome (or
+   any outcome that can be treated as such)
+ 
+##
+
+![](mrp_printer.png)
+
+## {.center}
+
+::: {.callout-note}
+
+Let's have a discussion. Can you envisage using MRP? How could MRP be useful to you?
+
+:::
+
+## References {.smaller}
+

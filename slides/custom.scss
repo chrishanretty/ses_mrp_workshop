@@ -1,0 +1,31 @@
+/*-- scss:defaults --*/
+
+$body-bg: #fff;
+$body-color: #202A30;
+$link-color: #EB641E;
+
+$font-family-sans-serif: "Corbel", "Arial", sans-serif, !default;
+
+/*-- scss:rules --*/
+#title-slide {
+    .title {
+	color: #fff;
+    }
+    .quarto-title-authors {
+	color: #fff;
+    }
+    .slide-logo {
+	visibility: hidden;
+    }
+}
+
+strong {
+   color: #EB641E;
+}
+.callout-content {
+    font-size: 250%;
+}
+
+.callout-body strong {
+    color: #000;
+}

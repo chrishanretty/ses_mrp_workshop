@@ -13,7 +13,9 @@ The materials include:
  - data
  - slides
  
-If you want to follow the slides, it's best to clone or download the
-whole directory and open the file slides/index.html locally.
+If you want to view the slides, you can either clone or download the
+whole directory and open the file slides/index.html locally, or you
+can use
+[https://htmlpreview.github.io/?https://github.com/chrishanretty/ses_mrp_workshop/blob/main/slides/index.html#/title-slide](htmlpreview.github.io)
 
 
